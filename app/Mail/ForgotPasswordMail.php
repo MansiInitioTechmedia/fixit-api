@@ -12,15 +12,15 @@ class ForgotPasswordMail extends Mailable
     use Queueable, SerializesModels;
 
     public $otp;
-    public $name;
+    public $email;
 
     /**
      * Create a new message instance.
      */
-    public function __construct($otp, $name)
+    public function __construct($otp, $email)
     {
         $this->otp = $otp;
-        $this->name = $name;
+        $this->email = $email;
     }
 
     /**
@@ -32,7 +32,7 @@ class ForgotPasswordMail extends Mailable
                     ->view('emails.forgot-password')
                     ->with([
                         'otp' => $this->otp,
-                        'name' => $this->name,
+                        'name' => $this->email,
                     ]);
     }
 }
