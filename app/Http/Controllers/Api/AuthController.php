@@ -16,11 +16,6 @@ use App\Http\Controllers\API\UserController;
 
 class AuthController extends Controller
 {
-    public function getData(Request $request)
-    {
-        echo "hello";
-    }
-
     public function signup(Request $request)
     {
         $validateUser = Validator::make($request->all(),[

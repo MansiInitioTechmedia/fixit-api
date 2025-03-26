@@ -30,11 +30,14 @@ Route::get('getdata',function(){
 });
 
 Route::post('signup',[AuthController::class,'signup']);
+
 Route::post('login', [AuthController::class,'login']);
 
 Route::post('/upload-images', [ImageUploadController::class, 'uploadImages']);
 
-
 Route::post('/forgot-password', [ForgotPasswordController::class, 'forgototPassword']);
 
 Route::post('/verify-otp', [ForgotPasswordController::class, 'verifyOtp']);
+
+Route::post('resetPassword', [ForgotPasswordController::class, 'resetPassword']);
+

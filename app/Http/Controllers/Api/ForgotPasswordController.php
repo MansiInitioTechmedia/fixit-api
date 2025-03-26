@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ForgotPasswordMail;
+use App\Models\PasswordReset;
+
 
 class ForgotPasswordController extends Controller
 {
@@ -42,7 +45,7 @@ class ForgotPasswordController extends Controller
 
             // Fetch user's name from users table
             $user = DB::table('users')->where('email', $email)->first();
-            //$name = $user ? $user->full_name : "User";
+            $name = $user ? $user->full_name : "User";
         
             // $mailable = new ForgotPasswordMail($otp, $email);
             // return $mailable->render();
@@ -67,47 +70,131 @@ class ForgotPasswordController extends Controller
 
 
 
-
     public function verifyOtp(Request $request)
-    {
-        try {
-            $validator = validator::make($request->all(), [
-                'email' => 'required|email|exists:users,email',
-                'otp' => 'required|string|min:4',
-            ]);
+{
+    try {
+        // Validate request
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|exists:users,email',
+            'otp' => 'required|string|min:4',
+        ]);
 
-            if ($validator->fails()) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Validation failed.',
-                    'data' => $validator->errors(),
-                ], 200);
-            }
-
-            $email = $request->input('email');
-            $otp = $request->input('otp');
-
-            $resetData = DB::table('password_resets')->where('email', '=', $email)->first();
-
-            if ($resetData || $resetData->otp == $otp || $resetData->expiry_time < now()) {
-                return response()->json([
-                    'status' => true,
-                    'message' => 'OTP verified successfully. You can now reset your password.',
-                    'data' => null,
-                ], 200);
-            } else {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Invalid or expired OTP.',
-                    'data' => null,
-                ]);
-            }
-        } catch (\Exception $e) {
+        if ($validator->fails()) {
             return response()->json([
                 'status' => false,
-                'message' => 'An error occurred while verifying the OTP.',
-                'data' => $e->getMessage(),
-            ], 500);
+                'message' => 'Validation failed.',
+                'data' => $validator->errors(),
+            ], 422);
         }
+
+        // Extract input
+        $email = $request->input('email');
+        $otp = $request->input('otp');
+
+        // Fetch OTP record from password_resets table
+        $resetData = DB::table('password_resets')->where('email', $email)->first();
+
+        // Check if OTP exists
+        if (!$resetData) {
+            return response()->json([
+                'status' => false,
+                'message' => 'OTP not found for this email.',
+                'data' => null,
+            ], 400);
+        }
+
+        // Check if OTP is expired
+        if ($resetData->expiry_time < now()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'OTP has expired. Please request a new one.',
+                'data' => null,
+            ], 400);
+        }
+
+        // Verify OTP
+        if ($resetData->otp != $otp) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid OTP. Please check and try again.',
+                'data' => null,
+            ], 400);
+        }
+
+        // OTP is valid
+        return response()->json([
+            'status' => true,
+            'message' => 'OTP verified successfully. You can now reset your password.',
+            'data' => null,
+        ], 200);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => false,
+            'message' => 'An error occurred while verifying the OTP.',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+}
+
+
+    public function resetPassword(Request $request)
+    {
+        // Validate the incoming request
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|exists:users,email',
+            'otp' => 'required|string',
+            'password' => ['required','string','min:8', 'regex:/[A-Z]/', 'regex:/[a-z]/', 'regex:/[0-9]/', 'regex:/[@$!%*?&#]/', ], 
+        ],[
+            'email.exists' => 'The provided email does not exist in our records.',
+            'email.email' => 'The provided email address is invalid.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation fails',
+                'data' => $validator->errors(),
+            ], 422);
+
+        }
+
+        // Check if the OTP is valid
+        $reset = PasswordReset::where('email', $request->email)
+            ->where('otp', $request->otp)
+            ->first();
+
+        if (!$reset) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid OTP or Expired OTP.',
+                'data' => null,
+            ], 400);
+        }
+
+        // Find the user by email
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User  not found.',
+                'data' => null,
+            ], 404);
+        }
+
+        // Update the user's password
+        $user->password = bcrypt($request->password);
+        $user->save(); // Save the updated user
+
+        // Delete the OTP record
+        $reset->delete();
+        // $formattedUser = $this->userController->formatUser($user);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Password reset successfully.',
+            'data' => $user,
+        ], 200);
     }
 }
