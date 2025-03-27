@@ -59,14 +59,14 @@
 <div class="email-container">
     <!-- Header Section (Company Logo & Name) -->
     <div class="header">
-    <img src="{{ asset('images/logo.png') }}" alt="Your Brand Logo">
+    <img src="https://http://127.0.0.1:8000/storage/uploads/logo.png" alt="Your Brand Logo">
 
         <h1>FixIt</h1>
     </div>
 
     <!-- Content -->
     <div class="content">
-        <p>Hello {{ $email }},</p>
+        <p>Hello {{ $name }},</p>
         <p>You requested a password reset for your account. Here is your One-Time Password (OTP):</p>
         
         <!-- OTP Display (Big & Highlighted) -->

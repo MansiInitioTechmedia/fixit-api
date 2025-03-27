@@ -35,7 +35,7 @@ Route::post('login', [AuthController::class,'login']);
 
 Route::post('/upload-images', [ImageUploadController::class, 'uploadImages']);
 
-Route::post('/forgot-password', [ForgotPasswordController::class, 'forgototPassword']);
+Route::post('/forgot-password', [ForgotPasswordController::class, 'forgotPassword']);
 
 Route::post('/verify-otp', [ForgotPasswordController::class, 'verifyOtp']);
 

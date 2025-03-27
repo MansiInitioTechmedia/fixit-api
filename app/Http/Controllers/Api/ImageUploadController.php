@@ -11,16 +11,13 @@ class ImageUploadController extends Controller
 {
     public function uploadImages(Request $request)
     {
-        // echo "Hello";
-        //     exit();
+       
         try {
             $request->validate([
                 'images' => 'required|array',
                 'images.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048'
             ]);
-            // echo "Hello";
-            // exit();
-
+            
             $uploadedImages = [];
 
             foreach ($request->file('images') as $imageFile) {
@@ -44,33 +41,25 @@ class ImageUploadController extends Controller
                 
             }
             return response()->json([
+                'status' => true,
                 'message' => 'Images uploaded successfully',
-                'images' => $uploadedImages
+                'data' => $uploadedImages
             ], 200);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Validation failed.',
-                'data' => $e->errors(),
+                'message' => $e->errors(),
+                'data' => null,
             ], 422);
 
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'An unexpected error occurred',
-                'data' => $e->getMessage()
+                'message' => $e->getMessage(),
+                'data' => null,
             ], 500);
         }
     }
 
-
-    // public function getImages()
-    // {
-    //     $images = Images::all();
-
-    //     return response()->json([
-    //         'images' => $images
-    //     ], 200);
-    // }
 }
