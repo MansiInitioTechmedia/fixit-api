@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Validator;
 class CategoryController extends Controller
 {
 
-    // Get all categories
+    
     public function index()
     {
         $categories = Category::all();
