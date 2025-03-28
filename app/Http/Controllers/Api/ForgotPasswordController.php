@@ -10,6 +10,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ForgotPasswordMail;
 use App\Models\PasswordReset;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
+
 
 
 class ForgotPasswordController extends Controller
@@ -206,4 +210,61 @@ class ForgotPasswordController extends Controller
             'data' => $user,
         ], 200);
     }
+
+
+
+    public function changePassword(Request $request)
+    {
+        $user = $request->user();
+
+        try {
+
+            if (!$request->hasHeader('Authorization')) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Authorization token is missing.',
+                    'data' => null,
+                ], 401); // Unauthorized
+            }
+
+            $validator = Validator::make($request->all(), [
+                'current_password' => ['required', 'string', 'min:8', 'regex:/[A-Z]/', 'regex:/[a-z]/', 'regex:/[0-9]/', 'regex:/[@$!%*?&#]/',],
+                'new_password' => ['required', 'string', 'min:8', 'regex:/[A-Z]/', 'regex:/[a-z]/', 'regex:/[0-9]/', 'regex:/[@$!%*?&#]/',],
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => $validator->errors(),
+                    'data' => null,
+                ], 200); // Bad Request
+            }
+
+            if (!Hash::check($request->current_password, Auth::user()->password)) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Current password is incorrect',
+                    'data' => null,
+                ], 200); // Bad Request
+            }
+
+            Auth::user()->update([
+                'password' => Hash::make($request->new_password),
+            ]);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Password changed successfully',
+                'data' => $user,
+            ], 200); // OK status            
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage(),
+                'data' => null,
+            ], 500); // Internal Server Error
+        }
+    }
+
 }

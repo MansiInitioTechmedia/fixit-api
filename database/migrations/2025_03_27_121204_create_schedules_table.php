@@ -15,6 +15,8 @@ return new class extends Migration {
             $table->foreignId('vehicle_id')->constrained()->onDelete('cascade');
             $table->date('start_date');
             $table->date('expiration_date');
+            $table->enum('kilometer', ['1000', '2000', '5000', '10000', '20000', '50000'])->default('5000')->nullable();
+            $table->enum('status', ['available', 'unavailable'])->default('available')->nullable();
             $table->timestamps();
         });
 

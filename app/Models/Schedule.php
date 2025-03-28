@@ -14,7 +14,9 @@ class Schedule extends Model {
         'category_id', 
         'vehicle_id', 
         'start_date', 
-        'expiration_date'
+        'expiration_date',
+        'kilometer',
+        'status'
     ];
 
     public function category() {

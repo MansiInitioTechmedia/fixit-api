@@ -37,6 +37,8 @@ Route::post('/signup',[AuthController::class,'signup']);
 
 Route::post('/login', [AuthController::class,'login']);
 
+Route::post('logout', [AuthController::class,'logout'])->middleware('auth:sanctum');
+
 Route::post('/upload-images', [ImageUploadController::class, 'uploadImages']);
 
 Route::post('/forgot-password', [ForgotPasswordController::class, 'forgotPassword']);
@@ -44,6 +46,9 @@ Route::post('/forgot-password', [ForgotPasswordController::class, 'forgotPasswor
 Route::post('/verify-otp', [ForgotPasswordController::class, 'verifyOtp']);
 
 Route::post('/resetPassword', [ForgotPasswordController::class, 'resetPassword']);
+
+Route::middleware('auth:sanctum')->post('/changePassword', [ForgotPasswordController::class, 'changePassword']);
+
 
 
 

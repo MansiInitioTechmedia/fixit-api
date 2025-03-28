@@ -16,8 +16,6 @@ class ScheduleController extends Controller {
         return response()->json(Schedule::with(['category', 'vehicle'])->get());
     }
 
-
-
     public function store(Request $request) {
 
         $request->validate([
@@ -25,6 +23,9 @@ class ScheduleController extends Controller {
             'vehicle_id' => 'required|exists:vehicles,id',
             'start_date' => 'required|date',
             'expiration_date' => 'required|date|after:start_date',
+            'kilometer' => 'nullable|integer',
+            'status' => 'sometimes|nullable|in:1,0'
+
         ]);
 
         $schedule = Schedule::create($request->all());
