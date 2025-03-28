@@ -24,43 +24,6 @@ class CategoryController extends Controller
         ], 200);
     }
 
-    // Store (Create) a new category
-    // public function store(Request $request)
-    // {
-    //     // Validate the incoming request data
-    //     $validator = Validator::make($request->all(), [
-    //         'name' => 'required|string|max:255|unique:categories,name',
-    //         'icon' => 'nullable|string',
-    //         'status' => 'nullable|in:1,0',
-    //     ]);
-
-    //     // Check if validation fails
-    //     if ($validator->fails()) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => $validator->errors(),
-    //             'data' => null,
-    //         ], 422);
-    //     }
-
-    //     try {
-    //         // Create the category
-    //         $category = Category::create(['name' => $request->name]);
-
-    //         return response()->json([
-    //             'status' => true,
-    //             'message' => 'Category added successfully!',
-    //             'data' => $category
-    //         ], 201); // Use 201 for resource creation
-
-    //     } catch (Exception $e) {
-    //         return response()->json([
-    //             'status' => false,
-    //             'message' => $e->getMessage(),
-    //             'data' => null,
-    //         ], 500);
-    //     }
-    // }
 
     public function store(Request $request)
 {
@@ -74,7 +37,7 @@ class CategoryController extends Controller
     if ($validator->fails()) {
         return response()->json([
             'status' => false,
-            'message' => $validator->errors(),
+            'message' => collect($validator->errors()->all())->implode(' '),
             'data' => null,
         ], 422);
     }
@@ -138,7 +101,7 @@ class CategoryController extends Controller
             if ($validator->fails()) {
                 return response()->json([
                     'status' => false,
-                    'message' => $validator->errors(),
+                    'message' => collect($validator->errors()->all())->implode(' '),
                     'data' => null,
                 ], 422);
             }
