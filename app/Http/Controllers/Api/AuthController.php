@@ -25,8 +25,6 @@ class AuthController extends Controller
             'pin' => $request->pin === "" ? null : $request->pin, // Ensure it's a valid 4-digit string
             'gender' => $request->input('gender', 'male'),
         ]);
-
-       
     
         // Validate the request
         $validateUser = Validator::make($request->all(), [
