@@ -36,7 +36,7 @@ class ImageUploadController extends Controller
                 // Add to response array
                 $uploadedImages[] = [
                     'name' => $image->image_name,
-                    'path' => asset('storage/uploads/' . $imageName) 
+                    'path' => url('storage/uploads/' . $imageName)
                 ];
                 
             }
@@ -49,7 +49,7 @@ class ImageUploadController extends Controller
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'status' => false,
-                'message' => $e->errors(),
+                'message' => collect($e->errors())->flatten()->implode(' '),
                 'data' => null,
             ], 422);
 

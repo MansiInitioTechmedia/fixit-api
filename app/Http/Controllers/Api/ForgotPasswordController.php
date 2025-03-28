@@ -25,7 +25,7 @@ class ForgotPasswordController extends Controller
             if ($validator->fails()) {
                 return response()->json([
                     'status' => false,
-                    'message' => $validator->errors(),
+                    'message' => collect($validator->errors()->all())->implode(' '),
                     'data' => null,
                 ], 422);
             }
@@ -91,7 +91,7 @@ class ForgotPasswordController extends Controller
             if ($validator->fails()) {
                 return response()->json([
                     'status' => false,
-                    'message' => $validator->errors(),
+                    'message' => collect($validator->errors()->all())->implode(' '),
                     'data' => null,
                 ], 422);
             }
@@ -162,7 +162,7 @@ class ForgotPasswordController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
-                'message' => $validator->errors(),
+                'message' => collect($validator->errors()->all())->implode(' '),
                 'data' => null,
             ], 422);
 

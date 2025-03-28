@@ -17,53 +17,65 @@ use App\Http\Controllers\API\UserController;
 class AuthController extends Controller
 {
     public function signup(Request $request)
-{
-    // Merge default values explicitly as strings
-    $request->merge([
-        'full_name' => (string) $request->input('full_name', 'none'),
-        'profile_picture' => (string) $request->input('profile_picture', 'none'),
-        'pin' => (string) $request->input('pin', '0000'), // Ensure it's a valid 4-digit string
-        'gender' => $request->input('gender', 'male'),
-    ]);
+    {
+        // Merge default values explicitly as strings
+        $request->merge([
+            'full_name' => (string) $request->input('full_name', 'none'),
+            'profile_picture' => (string) $request->input('profile_picture', 'none'),
+            'pin' => $request->pin === "" ? null : $request->pin, // Ensure it's a valid 4-digit string
+            'gender' => $request->input('gender', 'male'),
+        ]);
 
-    // Validate the request
-    $validateUser = Validator::make($request->all(), [
-        'full_name' => 'sometimes|string|max:255', 
-        'email' => 'required|email|unique:users,email',
-        'password' => ['required','string','min:8','regex:/[A-Z]/','regex:/[a-z]/','regex:/[0-9]/','regex:/[@$!%*?&#]/',],
-        'country_code' => 'required',
-        'phone_number' => 'required|unique:users,phone_number',
-        'gender' => 'nullable|in:male,female',
-        'profile_picture' => 'sometimes|string', 
-        'pin' => 'sometimes|digits:4', 
-    ]);
+       
+    
+        // Validate the request
+        $validateUser = Validator::make($request->all(), [
+            'full_name' => 'sometimes|string|max:255', 
+            'email' => 'required|email|unique:users,email',
+            'password' => ['required','string','min:8','regex:/[A-Z]/','regex:/[a-z]/','regex:/[0-9]/','regex:/[@$!%*?&#]/',],
+            'country_code' => 'required',
+            'phone_number' => 'required|integer|digits:10|unique:users,phone_number',
+            'gender' => 'nullable|in:male,female',
+            'profile_picture' => 'sometimes|string', 
+            'pin' => 'nullable|integer',
 
-    if ($validateUser->fails()) {
+        ]);
+    
+        if ($validateUser->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' =>  collect($validateUser->errors()->all())->implode(' '),
+                'data' => null,
+            ], 422);
+        }
+
+        if (!is_null($request->pin) && (!ctype_digit($request->pin) || strlen($request->pin) !== 4)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'The pin must be exactly 4 digits.',
+                'data' => null,
+            ], 422);
+        }
+    
+        // Create a new user
+        $user = User::create([
+            'full_name' => $request->full_name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'country_code' => $request->country_code,
+            'phone_number' => $request->phone_number,
+            'gender' => $request->gender,
+            'profile_picture' => asset('storage/uploads/' . $request->profile_picture),
+            'pin' => $request->pin,
+        ]);
+    
         return response()->json([
-            'status' => false,
-            'message' =>  $validateUser->errors()->all(),
-            'data' => null,
-        ], 422);
+            'status' => true,
+            'message' => 'User created successfully',
+            'data' => $user,
+        ], 201);
     }
-
-    // Create a new user
-    $user = User::create([
-        'full_name' => $request->full_name,
-        'email' => $request->email,
-        'password' => Hash::make($request->password),
-        'country_code' => $request->country_code,
-        'phone_number' => $request->phone_number,
-        'gender' => $request->gender,
-        'profile_picture' => asset('storage/uploads/' . $request->profile_picture),
-        'pin' => $request->pin,
-    ]);
-
-    return response()->json([
-        'status' => true,
-        'message' => 'User created successfully',
-        'data' => $user,
-    ], 201);
-}
+    
 
 
 
@@ -117,10 +129,10 @@ class AuthController extends Controller
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'status' => false,
-                'message' => $e->errors(),
+                'message' => collect($e->errors())->flatten()->implode(' '), // Convert array to string
                 'data' => null,
-            ], 422); // Unprocessable Entity status
-
+            ], 422);
+        
         } catch (\Exception $e) {
             // Catch any other unexpected errors
             return response()->json([
