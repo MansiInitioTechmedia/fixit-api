@@ -12,7 +12,6 @@ use App\Mail\ForgotPasswordMail;
 use App\Models\PasswordReset;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\ValidationException;
 
 
 

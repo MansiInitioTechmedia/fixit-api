@@ -1,50 +1,82 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
 use App\Models\Schedule;
-use App\Models\Vehicle;
-use App\Models\Category;
 use Illuminate\Http\Request;
-use Carbon\Carbon;
+use App\Http\Controllers\Controller;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Validator;
+use Exception;
 
-
-class ScheduleController extends Controller {
-
-    public function index() {
-
+class ScheduleController extends Controller
+{
+    // Get all schedules
+    public function index()
+    {
         return response()->json(Schedule::with(['category', 'vehicle'])->get());
     }
 
-    public function store(Request $request) {
 
-        $request->validate([
-            'category_id' => 'required|exists:categories,id',
+    // Store a new schedule
+    public function store(Request $request)
+    {
+        // Validate input
+        $validator = Validator::make($request->all(), [
             'vehicle_id' => 'required|exists:vehicles,id',
-            'start_date' => 'required|date',
-            'expiration_date' => 'required|date|after:start_date',
-            'kilometer' => 'nullable|integer',
-            'status' => 'sometimes|nullable|in:1,0'
-
+            'category_id' => 'required|exists:categories,id',
+            'start_date' => 'required|date_format:Y-m-d',
+            'expiration_date' => 'nullable|date_format:Y-m-d|after_or_equal:start_date',
+            'kilometers' => 'nullable|integer|min:0',
+            'status' => 'required|in:0,1,2',
         ]);
 
-        $schedule = Schedule::create($request->all());
-
-        // Send notification if expiration is within 5 days
-        if ($schedule->shouldNotify()) {
-
-            $this->sendNotification($schedule);
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => collect($validator->errors()->all())->implode(' '),
+                'data' => null
+            ], 422);
         }
 
-        return response()->json($schedule, 201);
+        try {
+            $validatedData = $request->all();
+
+            $schedule = Schedule::create($validatedData);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Schedule created successfully',
+                'data' => $schedule
+            ], 201);
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage(),
+                'data' => null
+            ], 500);
+        }
     }
 
 
+    // Show a specific schedule
+    public function show($id)
+    {
+        try {
+            $schedule = Schedule::with(['vehicle', 'category'])->findOrFail($id);
 
-    // public function sendNotification(Schedule $schedule) {
-    //     $message = "{$schedule->category->name} expires in " . Carbon::now()->diffInDays($schedule->expiration_date) . " days.";
-        
-    //     // Here, you would integrate with a real notification system
-    //     return response()->json(['notification' => $message]);
-    // }
+            return response()->json([
+                'status' => true,
+                'message' => 'Schedule retrieved successfully',
+                'data' => $schedule
+            ], 200);
+
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Schedule not found, Please provide a valid ID',
+                'data' => null
+            ], 404);
+        }
+    }
 }

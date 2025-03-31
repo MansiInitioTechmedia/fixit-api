@@ -15,7 +15,7 @@ class Schedule extends Model {
         'vehicle_id', 
         'start_date', 
         'expiration_date',
-        'kilometer',
+        'kilometers',
         'status'
     ];
 

@@ -32,7 +32,7 @@ class AuthController extends Controller
             'email' => 'required|email|unique:users,email',
             'password' => ['required','string','min:8','regex:/[A-Z]/','regex:/[a-z]/','regex:/[0-9]/','regex:/[@$!%*?&#]/',],
             'country_code' => 'required',
-            'phone_number' => 'required|integer|digits:10|unique:users,phone_number',
+            'phone_number' => 'required|string|digits:10|unique:users,phone_number',
             'gender' => 'nullable|in:male,female',
             'profile_picture' => 'sometimes|string', 
             'pin' => 'nullable|integer',
