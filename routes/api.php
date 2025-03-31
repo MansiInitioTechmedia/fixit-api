@@ -8,6 +8,8 @@ use App\Http\Controllers\Api\ForgotPasswordController;
 use App\Http\Controllers\Api\VehicleController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ScheduleController;
+use App\Http\Controllers\Api\MaintenanceLogController;
+use App\Http\Controllers\API\UserController;
 
 
 
@@ -49,6 +51,8 @@ Route::post('/resetPassword', [ForgotPasswordController::class, 'resetPassword']
 
 Route::middleware('auth:sanctum')->post('/changePassword', [ForgotPasswordController::class, 'changePassword']);
 
+Route::middleware('auth:sanctum')->post('/update-profile', [UserController::class, 'updateProfile']);
+
 
 
 
@@ -79,6 +83,14 @@ Route::prefix('schedules')->group(function () {
     Route::post('/create', [ScheduleController::class, 'store']); 
     Route::get('/show/{id}', [ScheduleController::class, 'show']); 
 });
+
+
+Route::prefix('maintenance-logs')->group(function () {
+    Route::get('/index', [MaintenanceLogController::class, 'index']); 
+    Route::post('/create', [MaintenanceLogController::class, 'store']); 
+    Route::delete('/delete/{id}', [MaintenanceLogController::class, 'destroy']); 
+});
+
 
 
 
