@@ -25,7 +25,7 @@ class ScheduleController extends Controller
         $validator = Validator::make($request->all(), [
             'vehicle_id' => 'required|exists:vehicles,id',
             'category_id' => 'required|exists:categories,id',
-            'start_date' => 'required|date_format:Y-m-d',
+            'start_date' => 'nullable|date_format:Y-m-d',
             'expiration_date' => 'nullable|date_format:Y-m-d|after_or_equal:start_date',
             'kilometers' => 'nullable|integer|min:0',
             'status' => 'required|in:0,1,2,3',
