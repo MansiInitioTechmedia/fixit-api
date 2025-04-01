@@ -78,7 +78,7 @@ class MaintenanceLogController extends Controller
                 'status'  => true,
                 'message' => 'Maintenance log deleted successfully',
                 'data'    => null
-            ], 200);
+            ], 200);         
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status'  => false,

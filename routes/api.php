@@ -82,6 +82,7 @@ Route::prefix('schedules')->group(function () {
     Route::get('/index', [ScheduleController::class, 'index']); 
     Route::post('/create', [ScheduleController::class, 'store']); 
     Route::get('/show/{id}', [ScheduleController::class, 'show']); 
+    Route::get('/status', [ScheduleController::class, 'getSchedulesByStatus']);
 });
 
 

@@ -31,7 +31,7 @@ class CategoryController extends Controller
     $validator = Validator::make($request->all(), [
         'name' => 'required|string|max:255|unique:categories,name',
         'icon' => 'nullable|string',
-        'status' => 'nullable|in:1,0',
+        'status' => 'required|in:1,0',
     ]);
  
     if ($validator->fails()) {

@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->id();
             $table->string('name')->unique();
             $table->string('icon')->nullable();
-            $table->enum('status', ['available', 'unavailable'])->default('available')->nullable();
+            $table->integer('status')->default(1);
             $table->timestamps();
         });
 

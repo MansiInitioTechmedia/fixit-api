@@ -16,7 +16,8 @@ return new class extends Migration {
             $table->date('start_date');
             $table->date('expiration_date')->nullable()->default(null);
             $table->integer('kilometers')->nullable()->default(null);
-            $table->enum('status', ['upcoming', 'completed', 'cancelled'])->default('upcoming')->nullable();
+            $table->integer('status'); // Store status as integer (0, 1, 2, 3)
+            $table->date('service_date')->default(DB::raw('CURRENT_DATE')); // New column for storing the current date
             $table->timestamps();
         });
 
