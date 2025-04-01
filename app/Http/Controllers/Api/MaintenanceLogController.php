@@ -14,14 +14,31 @@ class MaintenanceLogController extends Controller
     // Get all maintenance logs
     public function index()
     {
-        $logs = MaintenanceLog::all()->map(function ($log) {
-            return array_merge($log->toArray(), [
-                'receipts' => str_pad(isset($log->receipts) ? count(explode(',', $log->receipts)) : 0, 2, '0', STR_PAD_LEFT)
+        try {
+            // Fetching all logs and modifying the 'receipts' field as needed
+            $logs = MaintenanceLog::all()->map(function ($log) {
+                return array_merge($log->toArray(), [
+                    'receipts' => str_pad(isset($log->receipts) ? count(explode(',', $log->receipts)) : 0, 2, '0', STR_PAD_LEFT)
+                ]);
+            });
+    
+            // Returning the successful response with the data
+            return response()->json([
+                'status'  => true,
+                'message' => 'Logs retrieved successfully',
+                'data'    => $logs
             ]);
-        });
-
-        return response()->json($logs);
+            
+        } catch (\Exception $e) {
+            // Catch any errors and return the error response with the exception message
+            return response()->json([
+                'status'  => false,
+                'message' => $e->getMessage(),
+                'data'    => null
+            ]);
+        }
     }
+    
 
     // Store a new maintenance log
     public function store(Request $request)
