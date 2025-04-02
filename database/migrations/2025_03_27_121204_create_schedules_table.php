@@ -13,7 +13,7 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('category_id')->constrained()->onDelete('cascade');
             $table->foreignId('vehicle_id')->constrained()->onDelete('cascade');
-            $table->date('start_date');
+            $table->date('start_date')->nullable();
             $table->date('expiration_date')->nullable()->default(null);
             $table->integer('kilometers')->nullable()->default(null);
             $table->integer('status'); // Store status as integer (0, 1, 2, 3)
