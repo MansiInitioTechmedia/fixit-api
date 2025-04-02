@@ -9,7 +9,7 @@ use App\Http\Controllers\Api\VehicleController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ScheduleController;
 use App\Http\Controllers\Api\MaintenanceLogController;
-use App\Http\Controllers\API\UserController;
+use App\Http\Controllers\Api\UserController;
 
 
 
