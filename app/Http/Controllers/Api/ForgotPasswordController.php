@@ -63,7 +63,7 @@ class ForgotPasswordController extends Controller
             );
 
             // Send OTP email with name
-            Mail::to($email)->send(new ForgotPasswordMail($otp, $email, $name));
+            // Mail::to($email)->send(new ForgotPasswordMail($otp, $email, $name));
             
             return response()->json([
                 'status' => true,
