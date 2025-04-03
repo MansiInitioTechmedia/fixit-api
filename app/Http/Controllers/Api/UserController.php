@@ -16,16 +16,18 @@ class UserController extends Controller
     {
         $user = Auth::user();
 
-        // Validate input
-        $validator = Validator::make($request->all(), [
+        // Modify validation rules to allow existing email and phone number
+        $rules = [
             'full_name'       => 'nullable|string|max:255',
-            'email'           => 'nullable|email|unique:users,email,' . $user->id,
+            'email'           => ($request->email !== $user->email) ? 'nullable|email|unique:users,email' : 'nullable|email',
             'country_code'    => 'nullable|string',
-            'phone_number'    => 'nullable|string|digits:10|unique:users,phone_number,' . $user->id,
+            'phone_number'    => ($request->phone_number !== $user->phone_number) ? 'nullable|string|digits:10|unique:users,phone_number' : 'nullable|string|digits:10',
             'gender'          => 'nullable|in:male,female',
             'profile_picture' => 'nullable|string',
             'pin'             => 'nullable|digits:4',
-        ]);
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
             return response()->json([
@@ -41,10 +43,6 @@ class UserController extends Controller
             // Only update fields that are provided in the request
             foreach ($request->all() as $key => $value) {
                 if (!is_null($value) && in_array($key, ['full_name', 'email', 'country_code', 'phone_number', 'gender', 'pin'])) {
-                    // If the provided value matches the existing value, don't treat it as a unique update
-                    if ($user->$key === $value) {
-                        continue;
-                    }
                     $updateData[$key] = $value;
                 }
             }
