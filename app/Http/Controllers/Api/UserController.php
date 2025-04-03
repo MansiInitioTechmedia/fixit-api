@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Exception;
+
 class UserController extends Controller
 {
     // Update user profile
@@ -19,7 +20,6 @@ class UserController extends Controller
         $validator = Validator::make($request->all(), [
             'full_name'       => 'nullable|string|max:255',
             'email'           => 'nullable|email|unique:users,email,' . $user->id,
-            'password'        => ['nullable', 'string', 'min:8', 'regex:/[A-Z]/', 'regex:/[a-z]/', 'regex:/[0-9]/', 'regex:/[@$!%*?&#]/'],
             'country_code'    => 'nullable|string',
             'phone_number'    => 'nullable|string|digits:10|unique:users,phone_number,' . $user->id,
             'gender'          => 'nullable|in:male,female',
@@ -41,6 +41,10 @@ class UserController extends Controller
             // Only update fields that are provided in the request
             foreach ($request->all() as $key => $value) {
                 if (!is_null($value) && in_array($key, ['full_name', 'email', 'country_code', 'phone_number', 'gender', 'pin'])) {
+                    // If the provided value matches the existing value, don't treat it as a unique update
+                    if ($user->$key === $value) {
+                        continue;
+                    }
                     $updateData[$key] = $value;
                 }
             }
