@@ -16,24 +16,16 @@ class UserController extends Controller
     {
         $user = Auth::user();
 
-        // Merge default values explicitly as strings
-        $request->merge([
-            'full_name' => (string) $request->input('full_name', $user->full_name),
-            'profile_picture' => (string) $request->input('profile_picture', $user->profile_picture),
-            'pin' => $request->pin === "" ? null : $request->pin,
-            'gender' => $request->input('gender', $user->gender),
-        ]);
-
         // Validate input
         $validator = Validator::make($request->all(), [
-            'full_name'       => 'sometimes|string|max:255',
-            'email'           => 'sometimes|email|unique:users,email,' . $user->id,
-            'password'        => ['sometimes', 'string', 'min:8', 'regex:/[A-Z]/', 'regex:/[a-z]/', 'regex:/[0-9]/', 'regex:/[@$!%*?&#]/'],
-            'country_code'    => 'sometimes|required',
-            'phone_number'    => 'sometimes|string|digits:10|unique:users,phone_number,' . $user->id,
+            'full_name'       => 'nullable|string|max:255',
+            'email'           => 'nullable|email|unique:users,email,' . $user->id,
+            'password'        => ['nullable', 'string', 'min:8', 'regex:/[A-Z]/', 'regex:/[a-z]/', 'regex:/[0-9]/', 'regex:/[@$!%*?&#]/'],
+            'country_code'    => 'nullable|string',
+            'phone_number'    => 'nullable|string|digits:10|unique:users,phone_number,' . $user->id,
             'gender'          => 'nullable|in:male,female',
-            'profile_picture' => 'sometimes|string',
-            'pin'             => 'nullable|integer',
+            'profile_picture' => 'nullable|string',
+            'pin'             => 'nullable|digits:4',
         ]);
 
         if ($validator->fails()) {
@@ -44,29 +36,28 @@ class UserController extends Controller
             ], 422);
         }
 
-        if (!is_null($request->pin) && (!ctype_digit($request->pin) || strlen($request->pin) !== 4)) {
-            return response()->json([
-                'status' => false,
-                'message' => 'The pin must be exactly 4 digits.',
-                'data' => null,
-            ], 422);
-        }
-
         try {
-            $updateData = $request->only([
-                'full_name', 'email', 'country_code', 'phone_number', 'gender', 'pin'
-            ]);
+            $updateData = [];
 
-            if ($request->has('password')) {
+            // Only update fields that are provided in the request
+            foreach ($request->all() as $key => $value) {
+                if (!is_null($value) && in_array($key, ['full_name', 'email', 'country_code', 'phone_number', 'gender', 'pin'])) {
+                    $updateData[$key] = $value;
+                }
+            }
+
+            if ($request->filled('password')) {
                 $updateData['password'] = Hash::make($request->password);
             }
 
-            if ($request->has('profile_picture')) {
+            if ($request->filled('profile_picture')) {
                 $updateData['profile_picture'] = asset('storage/uploads/' . $request->profile_picture);
             }
 
-            // Update user profile
-            $user->update($updateData);
+            // Update user profile only if data is provided
+            if (!empty($updateData)) {
+                $user->update($updateData);
+            }
 
             return response()->json([
                 'status'  => true,

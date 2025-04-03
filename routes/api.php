@@ -9,7 +9,7 @@ use App\Http\Controllers\Api\VehicleController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ScheduleController;
 use App\Http\Controllers\Api\MaintenanceLogController;
-use App\Http\Controllers\API\UserController;
+use App\Http\Controllers\Api\UserController;
 
 
 
@@ -31,15 +31,15 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 
-Route::get('getdata',function(){
+Route::get('getdata', function () {
     echo "Welcome to Website";
 });
 
-Route::post('/signup',[AuthController::class,'signup']);
+Route::post('/signup', [AuthController::class, 'signup']);
 
-Route::post('/login', [AuthController::class,'login']);
+Route::post('/login', [AuthController::class, 'login']);
 
-Route::post('logout', [AuthController::class,'logout'])->middleware('auth:sanctum');
+Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
 Route::post('/upload-images', [ImageUploadController::class, 'uploadImages']);
 
@@ -58,38 +58,38 @@ Route::middleware('auth:sanctum')->post('/update-profile', [UserController::clas
 
 // Vehicle Controllers Routes
 Route::prefix('vehicles')->group(function () {
-    Route::get('/index', [VehicleController::class, 'index']); 
-    Route::post('/create', [VehicleController::class, 'store']); 
-    Route::get('/show/{vehicle}', [VehicleController::class, 'show']); 
-    Route::put('/update/{vehicle}', [VehicleController::class, 'update']); 
-    Route::delete('/destroy/{vehicle}', [VehicleController::class, 'destroy']); 
+    Route::get('/index', [VehicleController::class, 'index']);
+    Route::post('/create', [VehicleController::class, 'store']);
+    Route::get('/show/{vehicle}', [VehicleController::class, 'show']);
+    Route::put('/update/{vehicle}', [VehicleController::class, 'update']);
+    Route::delete('/destroy/{vehicle}', [VehicleController::class, 'destroy']);
 });
 
 
 // categories Controllers Routes
 Route::prefix('categories')->group(function () {
-    Route::get('/index', [CategoryController::class, 'index']); 
-    Route::post('/create', [CategoryController::class, 'store']); 
-    Route::get('/show/{category}', [CategoryController::class, 'show']); 
-    Route::put('/update/{category}', [CategoryController::class, 'update']); 
-    Route::delete('/destroy/{category}', [CategoryController::class, 'destroy']); 
+    Route::get('/index', [CategoryController::class, 'index']);
+    Route::post('/create', [CategoryController::class, 'store']);
+    Route::get('/show/{category}', [CategoryController::class, 'show']);
+    Route::put('/update/{category}', [CategoryController::class, 'update']);
+    Route::delete('/destroy/{category}', [CategoryController::class, 'destroy']);
 });
 
 
 
 // schedules Controllers Routes
 Route::prefix('schedules')->group(function () {
-    Route::get('/index', [ScheduleController::class, 'index']); 
-    Route::post('/create', [ScheduleController::class, 'store']); 
-    Route::get('/show/{id}', [ScheduleController::class, 'show']); 
+    Route::get('/index', [ScheduleController::class, 'index']);
+    Route::post('/create', [ScheduleController::class, 'store']);
+    Route::get('/show/{id}', [ScheduleController::class, 'show']);
     Route::get('/status', [ScheduleController::class, 'getSchedulesByStatus']);
 });
 
 
 Route::prefix('maintenance-logs')->group(function () {
-    Route::get('/index', [MaintenanceLogController::class, 'index']); 
-    Route::post('/create', [MaintenanceLogController::class, 'store']); 
-    Route::delete('/delete/{id}', [MaintenanceLogController::class, 'destroy']); 
+    Route::get('/index', [MaintenanceLogController::class, 'index']);
+    Route::post('/create', [MaintenanceLogController::class, 'store']);
+    Route::delete('/delete/{id}', [MaintenanceLogController::class, 'destroy']);
 });
 
 
