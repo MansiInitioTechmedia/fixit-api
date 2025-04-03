@@ -8,13 +8,15 @@ use App\Http\Controllers\Controller;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Validator;
 use Exception;
+use Illuminate\Support\Facades\Auth;
 
 class ScheduleController extends Controller
 {
     // Get all schedules
     public function index()
     {
-        $schedules = Schedule::with(['category', 'vehicle'])->get();
+        $userId = Auth::id();
+        $schedules = Schedule::where('user_id', $userId)->with(['category', 'vehicle'])->get();
 
         return response()->json([
             'status' => true,
@@ -28,7 +30,6 @@ class ScheduleController extends Controller
     // Store a new schedule
     public function store(Request $request)
     {
-        // Validate input
         $validator = Validator::make($request->all(), [
             'vehicle_id' => 'required|exists:vehicles,id',
             'category_id' => 'required|exists:categories,id',
@@ -48,9 +49,16 @@ class ScheduleController extends Controller
         }
 
         try {
-            $validatedData = $request->all();
-
-            $schedule = Schedule::create($validatedData);
+            $schedule = Schedule::create([
+                'user_id' => Auth::id(),
+                'vehicle_id' => $request->vehicle_id,
+                'category_id' => $request->category_id,
+                'start_date' => $request->start_date,
+                'expiration_date' => $request->expiration_date,
+                'kilometers' => $request->kilometers,
+                'status' => $request->status,
+                'service_date' => $request->service_date,
+            ]);
 
             return response()->json([
                 'status' => true,
@@ -70,7 +78,7 @@ class ScheduleController extends Controller
     public function show($id)
     {
         try {
-            $schedule = Schedule::with(['vehicle', 'category'])->findOrFail($id);
+            $schedule = Schedule::where('user_id', Auth::id())->with(['vehicle', 'category'])->findOrFail($id);
 
             return response()->json([
                 'status' => true,
@@ -86,7 +94,6 @@ class ScheduleController extends Controller
             ], 404);
         }
     }
-
     public function getSchedulesByStatus(Request $request)
     {
         $validStatuses = [0, 1, 2, 3];
@@ -103,10 +110,9 @@ class ScheduleController extends Controller
         $limit = $request->input('limit', 10);
 
         try {
-
-            $schedules = Schedule::where('status', $serviceStatus)
+            $schedules = Schedule::where('user_id', Auth::id())
+                ->where('status', $serviceStatus)
                 ->paginate($limit, ['*'], 'page', $page);
-
 
             return response()->json([
                 'status' => true,
@@ -120,7 +126,6 @@ class ScheduleController extends Controller
                 ]
             ]);
         } catch (\Exception $e) {
-            // Return error response if any exception occurs
             return response()->json([
                 'status' => false,
                 'message' => $e->getMessage(),
