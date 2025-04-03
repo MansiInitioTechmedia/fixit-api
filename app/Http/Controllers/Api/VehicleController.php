@@ -17,13 +17,15 @@ class VehicleController extends Controller
     // Get all vehicles
     public function index()
     {
-        $vehicles = Vehicle::all();
+        $vehicles = Vehicle::where('user_id', auth()->id())->get();
+
         return response()->json([
             'status' => true,
             'message' => 'Vehicles retrieved successfully',
             'data' => $vehicles
         ], 200);
     }
+
 
 
     // Store a new vehicle
@@ -33,7 +35,7 @@ class VehicleController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'registration_number' => 'required|string|max:50|unique:vehicles,registration_number',
-            'vehicle_type' => 'nullable|string|in:car,motorcycle,truck,bicycle,bus,van,suv', // Specify valid vehicle types
+            'vehicle_type' => 'nullable|string|in:car,motorcycle,truck,bicycle,bus,van,suv',
             'status' => 'nullable|in:1,0'
         ]);
 
@@ -47,23 +49,22 @@ class VehicleController extends Controller
         }
 
         try {
-            // Prepare vehicle data
-            $vehicleData = $request->all();
-            $vehicleData['vehicle_type'] = $vehicleData['vehicle_type'] ?? 'car'; // Default to 'car'
-            $vehicleData['status'] = $vehicleData['status'] ?? '1'; // Default to 'available'
+            // Create the vehicle with the authenticated user's ID
+            $vehicle = Vehicle::create([
+                'name' => $request->name,
+                'registration_number' => $request->registration_number,
+                'vehicle_type' => $request->vehicle_type ?? 'car',
+                'status' => $request->status ?? 'available',
+                'user_id' => auth()->id(),
+            ]);
 
-            // Create the vehicle
-            $vehicle = Vehicle::create($vehicleData);
-
-            // Return success response
             return response()->json([
                 'status' => true,
-                'message' => 'Vehicle Added successfully!',
+                'message' => 'Vehicle added successfully!',
                 'data' => $vehicle
-            ], 201); // Use 201 for resource creation
+            ], 201);
 
         } catch (\Exception $e) {
-            // Return general error response
             return response()->json([
                 'status' => false,
                 'message' => $e->getMessage(),
@@ -74,11 +75,15 @@ class VehicleController extends Controller
 
 
 
+
     // Show a single vehicle
     public function show($id)
     {
         try {
-            $vehicle = Vehicle::findOrFail($id);
+            $vehicle = Vehicle::where('id', $id)
+                ->where('user_id', auth()->id())
+                ->firstOrFail();
+
             return response()->json([
                 'status' => true,
                 'message' => 'Vehicle retrieved successfully',
@@ -88,34 +93,30 @@ class VehicleController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Vehicle not found, Please give proper ID',
+                'message' => 'Vehicle not found or you do not have permission to view it.',
                 'data' => null,
             ], 404);
         }
-
     }
+
 
 
     // Update a vehicle
     public function update(Request $request, $id)
     {
         try {
-            // Find the vehicle by ID or throw a ModelNotFoundException
-            $vehicle = Vehicle::findOrFail($id);
+            $vehicle = Vehicle::where('id', $id)
+                ->where('user_id', auth()->id())
+                ->firstOrFail();
 
-            // Validate the incoming request data
             $request->validate([
-                'name' => 'sometimes|nullable|string|max:255',
-                'registration_number' => 'sometimes|nullable|string|unique:vehicles,registration_number,' . $id,
-                'vehicle_type' => 'sometimes|nullable|string|in:car,motorcycle,truck,bicycle,bus,van,suv', // Specify valid vehicle types
-                'status' => 'sometimes|nullable|in:1,0'
+                'name' => 'sometimes|string|max:255',
+                'registration_number' => 'sometimes|string|unique:vehicles,registration_number,' . $id,
+                'vehicle_type' => 'sometimes|string|in:car,motorcycle,truck,bicycle,bus,van,suv',
+                'status' => 'sometimes|in:1,0'
             ]);
 
-            // Prepare the data for update
-            $dataToUpdate = $request->only(['name', 'registration_number', 'vehicle_type', 'status']);
-
-            // Update the vehicle with only the provided fields
-            $vehicle->update(array_filter($dataToUpdate));
+            $vehicle->update($request->only(['name', 'registration_number', 'vehicle_type', 'status']));
 
             return response()->json([
                 'status' => true,
@@ -124,16 +125,13 @@ class VehicleController extends Controller
             ], 200);
 
         } catch (ModelNotFoundException $e) {
-
             return response()->json([
                 'status' => false,
-                'message' => 'Vehicle not found, Please give proper ID',
+                'message' => 'Vehicle not found or you do not have permission to update it.',
                 'data' => null,
             ], 404);
 
-
         } catch (Exception $e) {
-
             return response()->json([
                 'status' => false,
                 'message' => $e->getMessage(),
@@ -148,7 +146,10 @@ class VehicleController extends Controller
     public function destroy($id)
     {
         try {
-            $vehicle = Vehicle::findOrFail($id);
+            $vehicle = Vehicle::where('id', $id)
+                ->where('user_id', auth()->id())
+                ->firstOrFail();
+
             $vehicle->delete();
 
             return response()->json([
@@ -160,7 +161,7 @@ class VehicleController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Vehicle not found, Please give proper ID',
+                'message' => 'Vehicle not found or you do not have permission to delete it.',
                 'data' => null,
             ], 404);
 
@@ -172,4 +173,5 @@ class VehicleController extends Controller
             ], 500);
         }
     }
+
 }

@@ -56,40 +56,39 @@ Route::middleware('auth:sanctum')->post('/update-profile', [UserController::clas
 
 
 
-// Vehicle Controllers Routes
-Route::prefix('vehicles')->group(function () {
-    Route::get('/index', [VehicleController::class, 'index']);
-    Route::post('/create', [VehicleController::class, 'store']);
-    Route::get('/show/{vehicle}', [VehicleController::class, 'show']);
-    Route::put('/update/{vehicle}', [VehicleController::class, 'update']);
-    Route::delete('/destroy/{vehicle}', [VehicleController::class, 'destroy']);
-});
+Route::middleware('auth:sanctum')->group(function () {
+    // Vehicle Controllers Routes
+    Route::prefix('vehicles')->group(function () {
+        Route::get('/index', [VehicleController::class, 'index']);
+        Route::post('/create', [VehicleController::class, 'store']);
+        Route::get('/show/{vehicle}', [VehicleController::class, 'show']);
+        Route::put('/update/{vehicle}', [VehicleController::class, 'update']);
+        Route::delete('/destroy/{vehicle}', [VehicleController::class, 'destroy']);
+    });
 
+    // Categories Controllers Routes
+    Route::prefix('categories')->group(function () {
+        Route::get('/index', [CategoryController::class, 'index']);
+        Route::post('/create', [CategoryController::class, 'store']);
+        Route::get('/show/{category}', [CategoryController::class, 'show']);
+        Route::put('/update/{category}', [CategoryController::class, 'update']);
+        Route::delete('/destroy/{category}', [CategoryController::class, 'destroy']);
+    });
 
-// categories Controllers Routes
-Route::prefix('categories')->group(function () {
-    Route::get('/index', [CategoryController::class, 'index']);
-    Route::post('/create', [CategoryController::class, 'store']);
-    Route::get('/show/{category}', [CategoryController::class, 'show']);
-    Route::put('/update/{category}', [CategoryController::class, 'update']);
-    Route::delete('/destroy/{category}', [CategoryController::class, 'destroy']);
-});
+    // Schedules Controllers Routes
+    Route::prefix('schedules')->group(function () {
+        Route::get('/index', [ScheduleController::class, 'index']);
+        Route::post('/create', [ScheduleController::class, 'store']);
+        Route::get('/show/{id}', [ScheduleController::class, 'show']);
+        Route::get('/status', [ScheduleController::class, 'getSchedulesByStatus']);
+    });
 
-
-
-// schedules Controllers Routes
-Route::prefix('schedules')->group(function () {
-    Route::get('/index', [ScheduleController::class, 'index']);
-    Route::post('/create', [ScheduleController::class, 'store']);
-    Route::get('/show/{id}', [ScheduleController::class, 'show']);
-    Route::get('/status', [ScheduleController::class, 'getSchedulesByStatus']);
-});
-
-
-Route::prefix('maintenance-logs')->group(function () {
-    Route::get('/index', [MaintenanceLogController::class, 'index']);
-    Route::post('/create', [MaintenanceLogController::class, 'store']);
-    Route::delete('/delete/{id}', [MaintenanceLogController::class, 'destroy']);
+    // Maintenance Logs Controllers Routes
+    Route::prefix('maintenance-logs')->group(function () {
+        Route::get('/index', [MaintenanceLogController::class, 'index']);
+        Route::post('/create', [MaintenanceLogController::class, 'store']);
+        Route::delete('/delete/{id}', [MaintenanceLogController::class, 'destroy']);
+    });
 });
 
 

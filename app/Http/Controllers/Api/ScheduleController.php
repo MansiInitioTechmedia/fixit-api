@@ -14,8 +14,15 @@ class ScheduleController extends Controller
     // Get all schedules
     public function index()
     {
-        return response()->json(Schedule::with(['category', 'vehicle'])->get());
+        $schedules = Schedule::with(['category', 'vehicle'])->get();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Schedules retrieved successfully',
+            'data' => $schedules
+        ], 200);
     }
+
 
 
     // Store a new schedule
