@@ -119,10 +119,10 @@ class ScheduleController extends Controller
                 'message' => 'Record fetch successfully.',
                 'data' => [
                     'total' => $schedules->total(),
-                    'perPage' => $schedules->perPage(),
-                    'currentPage' => $schedules->currentPage(),
-                    'lastPage' => $schedules->lastPage(),
-                    'servicesSchedule' => $schedules->items(),
+                    'per_page' => $schedules->perPage(),
+                    'current_page' => $schedules->currentPage(),
+                    'last_page' => $schedules->lastPage(),
+                    'services_schedule' => $schedules->items(),
                 ]
             ]);
         } catch (\Exception $e) {

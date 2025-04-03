@@ -13,16 +13,29 @@ class MaintenanceLog extends Model
 
 
     protected $fillable = [
+        'user_id', 
+        'car_id',
         'car_name',
         'service_type',
         'maintenance_date',
         'amount',
-        'receipts'
+        'receipts',
+    
     ];
 
 
     protected $casts = [
         'receipts' => 'array', // automatically cast the JSON receipts field to an array
     ];
+
+    public function vehicle()   
+    {
+        return $this->belongsTo(Vehicle::class, 'car_id');
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
     
 }

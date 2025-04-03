@@ -8,99 +8,111 @@ use App\Http\Controllers\Controller;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Validator;
 use Exception;
+use Illuminate\Support\Facades\Auth;
+
 
 class MaintenanceLogController extends Controller
 {
     // Get all maintenance logs
-    public function index()
+    public function index(Request $request)
     {
         try {
-            // Fetching all logs and modifying the 'receipts' field as needed
-            $logs = MaintenanceLog::all()->map(function ($log) {
+            $user = auth()->user(); // Get the authenticated user
+            $logs = MaintenanceLog::where('user_id', $user->id)->get()->map(function ($log) {
                 return array_merge($log->toArray(), [
-                    'receipts' => str_pad(isset($log->receipts) ? count(explode(',', $log->receipts)) : 0, 2, '0', STR_PAD_LEFT)
+                    'receipts' => str_pad(
+                        isset($log->receipts) && is_array($log->receipts) ? count($log->receipts) : 0,
+                        2,
+                        '0',
+                        STR_PAD_LEFT
+                    )
                 ]);
             });
-    
-            // Returning the successful response with the data
+
             return response()->json([
-                'status'  => true,
+                'status' => true,
                 'message' => 'Logs retrieved successfully',
-                'data'    => $logs
+                'data' => $logs
             ]);
-            
+
         } catch (\Exception $e) {
-            // Catch any errors and return the error response with the exception message
             return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => $e->getMessage(),
-                'data'    => null
+                'data' => null
             ]);
         }
     }
-    
+
+
+
 
     // Store a new maintenance log
     public function store(Request $request)
     {
-        // Validate input
         $validator = Validator::make($request->all(), [
-            'car_name'         => 'required|string|max:255',
-            'service_type'     => 'required|string|max:255',
+            'car_id' => 'required|exists:vehicles,id',
+            'car_name' => 'required|string|max:255',
+            'service_type' => 'required|string|max:255',
             'maintenance_date' => 'required|date',
-            'amount'           => 'required|numeric|min:0',
-            'receipts'         => 'sometimes|string',
+            'amount' => 'required|numeric|min:0',
+            'receipts' => 'sometimes|string',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => collect($validator->errors()->all())->implode(' '),
-                'data'    => null
+                'data' => null
             ], 422);
         }
 
         try {
             $validatedData = $request->all();
-
-             // Count number of images in receipts if provided
-             $receiptsCount = isset($validatedData['receipts']) ? count(explode(',', $validatedData['receipts'])) : 0;
+            $validatedData['user_id'] = Auth::id(); // Assign logged-in user
 
             $log = MaintenanceLog::create($validatedData);
+
             return response()->json([
-                'status'  => true,
+                'status' => true,
                 'message' => 'Maintenance log added successfully',
-                'data'    => array_merge($log->toArray(), [
-                    'receipts' => str_pad($receiptsCount, 2, '0', STR_PAD_LEFT)
-                ])
+                'data' => $log
             ], 201);
         } catch (Exception $e) {
             return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => $e->getMessage(),
-                'data'    => null
+                'data' => null
             ], 500);
         }
     }
-
 
     // Remove a maintenance log
     public function destroy($id)
     {
         try {
-            $log = MaintenanceLog::findOrFail($id);
+            $log = MaintenanceLog::where('id', $id)->where('user_id', Auth::id())->first();
+
+            if (!$log) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Maintenance log not found or you do not have permission to delete it.',
+                    'data' => null
+                ], 404);
+            }
+
             $log->delete();
 
             return response()->json([
-                'status'  => true,
+                'status' => true,
                 'message' => 'Maintenance log deleted successfully',
-                'data'    => null
-            ], 200);         
+                'data' => null
+            ], 200);
         } catch (ModelNotFoundException $e) {
             return response()->json([
-                'status'  => false,
-                'message' => 'Maintenance log not found, Please provide a valid ID',
-                'data'    => null
+                'status' => false,
+                'message' => 'Maintenance log not found.',
+                'data' => null
             ], 404);
         }
     }
