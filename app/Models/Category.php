@@ -16,7 +16,6 @@ class Category extends Model {
         'name',
         'icon',
         'status',
-        'user_id',
     ];
 
     public function schedules() {

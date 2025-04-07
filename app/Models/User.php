@@ -29,6 +29,7 @@ class User extends Authenticatable
         'gender',
         'profile_picture',
         'pin',
+        'fcm_token'
     ];
 
     /**

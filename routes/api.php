@@ -10,8 +10,7 @@ use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ScheduleController;
 use App\Http\Controllers\Api\MaintenanceLogController;
 use App\Http\Controllers\Api\UserController;
-
-
+use App\Http\Controllers\Api\PushNotificationController;
 
 
 
@@ -53,7 +52,17 @@ Route::middleware('auth:sanctum')->post('/changePassword', [ForgotPasswordContro
 
 Route::middleware('auth:sanctum')->post('/update-profile', [UserController::class, 'updateProfile']);
 
+Route::post('/test-push', [PushNotificationController::class, 'send']);
 
+
+// Categories Controllers Routes
+Route::prefix('categories')->group(function () {
+    Route::get('/index', [CategoryController::class, 'index']);
+    Route::post('/create', [CategoryController::class, 'store']);
+    Route::get('/show/{category}', [CategoryController::class, 'show']);
+    Route::put('/update/{category}', [CategoryController::class, 'update']);
+    Route::delete('/destroy/{category}', [CategoryController::class, 'destroy']);
+});
 
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -64,15 +73,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/show/{vehicle}', [VehicleController::class, 'show']);
         Route::put('/update/{vehicle}', [VehicleController::class, 'update']);
         Route::delete('/destroy/{vehicle}', [VehicleController::class, 'destroy']);
-    });
-
-    // Categories Controllers Routes
-    Route::prefix('categories')->group(function () {
-        Route::get('/index', [CategoryController::class, 'index']);
-        Route::post('/create', [CategoryController::class, 'store']);
-        Route::get('/show/{category}', [CategoryController::class, 'show']);
-        Route::put('/update/{category}', [CategoryController::class, 'update']);
-        Route::delete('/destroy/{category}', [CategoryController::class, 'destroy']);
     });
 
     // Schedules Controllers Routes
