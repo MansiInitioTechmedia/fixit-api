@@ -12,11 +12,10 @@ use Illuminate\Support\Facades\Validator;
 
 class CategoryController extends Controller
 {
-
-
+    // List all categories
     public function index()
     {
-        $categories = Category::where('user_id', auth()->id())->get();
+        $categories = Category::all();
 
         return response()->json([
             'status' => true,
@@ -25,8 +24,7 @@ class CategoryController extends Controller
         ], 200);
     }
 
-
-
+    // Store a new category
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -48,8 +46,9 @@ class CategoryController extends Controller
                 'name' => $request->name,
                 'icon' => $request->icon,
                 'status' => $request->status,
-                'user_id' => auth()->id(),
+                // 'user_id' => auth()->id(), // Removed user-specific assignment
             ]);
+
             return response()->json([
                 'status' => true, 
                 'message' => 'Category added successfully!', 
@@ -69,8 +68,7 @@ class CategoryController extends Controller
     public function show($id)
     {
         try {
-            
-            $category = Category::where('id', $id)->where('user_id', auth()->id())->firstOrFail();
+            $category = Category::findOrFail($id);
 
             return response()->json([
                 'status' => true, 
@@ -81,7 +79,7 @@ class CategoryController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false, 
-                'message' => 'Category not found or you do not have permission to view it.', 
+                'message' => 'Category not found.', 
                 'data' => null
             ], 404);
         }
@@ -91,7 +89,7 @@ class CategoryController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $category = Category::where('id', $id)->where('user_id', auth()->id())->firstOrFail();
+            $category = Category::findOrFail($id);
 
             $validator = Validator::make($request->all(), [
                 'name' => 'sometimes|string|max:255|unique:categories,name,' . $id,
@@ -110,12 +108,13 @@ class CategoryController extends Controller
             return response()->json([
                 'status' => true, 
                 'message' => 'Category updated successfully', 
-                'data' => $category], 200);
+                'data' => $category
+            ], 200);
 
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false, 
-                'message' => 'Category not found or you do not have permission to view it.', 
+                'message' => 'Category not found.', 
                 'data' => null
             ], 404);
         }
@@ -125,7 +124,7 @@ class CategoryController extends Controller
     public function destroy($id)
     {
         try {
-            $category = Category::where('id', $id)->where('user_id', auth()->id())->firstOrFail();
+            $category = Category::findOrFail($id);
 
             $category->delete();
 
@@ -138,10 +137,9 @@ class CategoryController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => false, 
-                'message' => 'Category not found or you do not have permission to view it.', 
+                'message' => 'Category not found.', 
                 'data' => null
             ], 404);
         }
     }
 }
-
